@@ -4,17 +4,53 @@ import { useState } from "react"
 
 function Folder({ explorer }) {
 
-  const [expand, setExpand] = useState(false);  
+  const [expand, setExpand] = useState(false);
+  const [showInput, setShowInput] = useState({
+    visible: false,
+    isFolder: false,
+  });   
+
+  const createFile = (e, isFolder) => {
+    e.stopPropagation();
+    setExpand(true);
+    setShowInput({
+      visible: true,
+      isFolder
+    });
+  };
+
+  const addFile = (e) => {
+    if (e.keyCode === 13 && e.target.value) {  
+        setShowInput({ ...showInput, visible: false });
+      }
+  }
 
   if(explorer.isFolder) {
     return (
         <>
-        <div onClick={() => setExpand(!expand)}>
+        <div onClick={() => setExpand(!expand)} className="folder">
             📁 {explorer.name}
+            <div>
+
+            <button onClick={(e) => createFile(e, true)}>Add 📁</button>
+            <button onClick={(e) => createFile(e, false)}>Add 📃</button>
+            </div>
         </div>
         <div style={{display: expand ? "block" : "none", paddingLeft:25}}>
-        {explorer.items.map((exp, key)=>{
-            return <Folder explorer={exp} key={key} />
+            {
+                showInput.visible && (
+                    <div className="inputContainer">
+                        <span>{showInput.isFolder ? "📁" : "📄"}</span>
+                        <input type="text"
+                        className="inputContainer__input"
+                        autoFocus
+                        onKeyDown={addFile}
+                        onBlur={() => setShowInput({...showInput, visible:false})} />
+                    </div>
+                )
+            }
+        {explorer.items.map((exp)=>{
+            return <Folder explorer={exp} key={exp.id} />
         })}
         </div>
         </>
@@ -23,7 +59,7 @@ function Folder({ explorer }) {
   else{
     return(
         <>
-        <div>📃 {explorer.name}</div>
+        <div className="file">📃 {explorer.name}</div>
         </>
     )
   }
